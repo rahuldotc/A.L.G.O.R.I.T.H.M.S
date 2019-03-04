@@ -2,8 +2,8 @@
 
 using namespace std;
 
-void reArrange(int arr[], int i, int j){
-    int temp = arr[i];
+template<class X>void reArrange(X arr[], int i, int j){
+    X temp = arr[i];
     while(i>j){
         arr[i]=arr[i-1];
         i--;
@@ -11,7 +11,7 @@ void reArrange(int arr[], int i, int j){
     arr[j] = temp;
 }
 
-void InsertionSort(int arr[], int size){
+template<class X>void InsertionSort(X arr[], int size){
     for(int i=1; i<size; i++){
         for(int j=0; j<i; j++){
             if(arr[i] <= arr[j]){
@@ -23,7 +23,7 @@ void InsertionSort(int arr[], int size){
 }
 
 int main(){
-    int arr[] = { 10, 8, 4, 3, 8, 0, -34, -5, 7 };
+    double arr[] = { 10.2, 8.6, 4, 3.5, 8, 0, -34, -5, 7 };
 
     for(int i=0; i<9; i++){
         cout<<arr[i]<<" ";
