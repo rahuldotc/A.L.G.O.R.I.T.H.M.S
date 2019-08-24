@@ -23,6 +23,8 @@ public:
 	void insert(int);
 	void remove(int);
 	BSTNode *getNode(int);
+	BSTNode* getInorderSuccessor(BSTNode*);
+	BSTNode* getInorderPredecessor(BSTNode*);
 	void traverse(string);
 	void inorderTrav(BSTNode*);
 	void preorderTrav(BSTNode*);
@@ -104,20 +106,21 @@ void BST::remove(int data) {
 			}
 		}
 		//NON-ROOT CASES
-		if(flag) {
-			if(current->right) {
-				(current->parent)->right = current->right;
+		if(current->parent) {
+			if(flag) {
+				if(current->right) {
+					(current->parent)->right = current->right;
+				} else {
+					(current->parent)->right = current->left;
+				}
 			} else {
-				(current->parent)->right = current->left;
-			}
-		} else {
-			if(current->left) {
-				(current->parent)->left = current->left;
-			} else {
-				(current->parent)->left = current->right;			
+				if(current->left) {
+					(current->parent)->left = current->left;
+				} else {
+					(current->parent)->left = current->right;			
+				}
 			}
 		}
-
 		//LINKING CHILD-PARENT NODES/SUBTREES
 		if(current->right) {
 			current->right->parent = current->parent;					
@@ -125,31 +128,15 @@ void BST::remove(int data) {
 		if(current->left) {
 			current->left->parent = current->parent;					
 		}
+
+		previous = current->parent;
 	}
 
 	//NODE HAVING TWO CHILDREN
 	if(current->left && current->right) {
 		BSTNode *temp_current = current;
-		previous = current;
-		current = current->right;
-		int temp_flag = 1;
-		while(current->left) {
-			temp_flag = 0;
-			previous = current;
-			current = current->left;
-		}
-
-		//LINKING INORDER SUCCESSOR'S PARENTS TO ITS RIGHT CHILD
-		if(temp_flag) {
-			(current->parent)->right = current->right;
-		} else {
-			(current->parent)->left = current->right;
-		}
-
-		//LINKING INORDER SUCCESSOR'S RIGHT CHILD TO IT'S PARENT
-		if(current->right) {
-			current->right->parent = current->parent;					
-		}
+		
+		current = getInorderSuccessor(temp_current);
 
 		//LINKING NEW NODE TO DELETED NODE'S CHILDREN
 		current->left = temp_current->left;
@@ -182,10 +169,11 @@ void BST::remove(int data) {
 		
 		temp_current = NULL;
 		delete(temp_current);
+	
+		previous = current;
 	}
 
 	//BALANCE UPDATE
-	previous = current;
 	while(previous) {
 		int root_flag = 0;
 		previous->balance = height(previous->left) - height(previous->right);
@@ -214,6 +202,60 @@ BSTNode *BST::getNode(int val) {
 	return current;
 }
 
+BSTNode* BST::getInorderSuccessor(BSTNode* node) {
+	BSTNode *current;
+	if(node->right) {
+		current = node->right;
+	} else {
+		current = NULL;
+		return current;
+	}
+	while(current->left) {
+		current = current->left;
+	}
+
+	//LINKING INORDER SUCCESSOR'S PARENTS TO ITS RIGHT CHILD
+	if(current->parent->right == current) {
+		current->parent->right = current->right;
+	} else {
+		current->parent->left = current->right;
+	}
+
+	//LINKING INORDER SUCCESSOR'S RIGHT CHILD TO IT'S PARENT
+	if(current->right) {
+		current->right->parent = current->parent;					
+	}
+
+	return current;
+} 
+
+BSTNode* BST::getInorderPredecessor(BSTNode* node) {
+	BSTNode *current;
+	if(node->left) {
+		current = node->left;
+	} else {
+		current = NULL;
+		return current;
+	}
+	while(current->right) {
+		current = current->right;
+	}
+
+	//LINKING INORDER PREDECESSOR'S PARENTS TO ITS LEFT CHILD
+	if(current->parent->right == current) {
+		current->parent->right = current->left;
+	} else {
+		current->parent->left = current->right;
+	}
+
+	//LINKING INORDER PREDECESSOR'S LEFT CHILD TO IT'S PARENT
+	if(current->left) {
+		current->left->parent = current->parent;					
+	}
+
+	return current;
+} 
+
 void BST::inorderTrav(BSTNode *node) {
 	if(nodeCount() == 0) {
 		return;
@@ -227,13 +269,14 @@ void BST::inorderTrav(BSTNode *node) {
 	while(!current && !stack.isEmpty()) {
 		int val = stack.pop();
 		BSTNode *temp = getNode(val);
-		cout << val << " " << " balance = " << temp->balance << endl;;
+		cout << val << " ";
 
 		current = getNode(val)->right;
 		if(current) {
 			goto loop;						
 		}
 	}
+	cout << endl;
 }
 
 void BST::preorderTrav(BSTNode *node) {
@@ -254,6 +297,7 @@ void BST::preorderTrav(BSTNode *node) {
 			stack.push(current->left->data);			
 		}
 	}
+	cout << endl;
 }
 
 void BST::postorderTrav(BSTNode *node) {
@@ -281,6 +325,7 @@ void BST::postorderTrav(BSTNode *node) {
 			}
 		}
 	} while(!stack.isEmpty());
+	cout << endl;
 }
 
 void BST::levelorderTrav(BSTNode *node) {
@@ -298,6 +343,7 @@ void BST::levelorderTrav(BSTNode *node) {
 		queue.enqueue(temp->right->data);			
 		}
 	}
+	cout << endl;
 }
 
 void BST::traverse(string mode) {
@@ -429,7 +475,9 @@ void BST::AVLUpdate(BSTNode *node, int root_flag) {
 }
 
 void BST::backtrack(BSTNode *node) {
-	cout << "root -> " << root->data << endl;
+	if(root) {
+		cout << "root -> " << root->data << endl;
+	}
 	while(node) {
 		cout << node->data << " " << endl;
 		node = node->parent;
